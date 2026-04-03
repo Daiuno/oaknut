@@ -315,21 +315,22 @@ public:
             
             os_log(oaknut_log, "%{public}s addr=0x%llx, size=%zu", "[>>oaknut CodeBlock] TXM: vm_map rx succeeded:", (unsigned long long)rx_addr, actual_size);
             
-            // Execute brk #0x69 to notify StikDebug to mark memory as executable
+            // Execute brk #0xf00d to notify StikDebug to mark memory as executable
             const char* skip_brk = getenv("AZAHAR_SKIP_BRK");
             if (skip_brk && std::atoi(skip_brk) != 0) {
-                os_log(oaknut_log, "%{public}s", "[>>oaknut CodeBlock] TXM: Skipping brk #0x69 (AZAHAR_SKIP_BRK is set)");
+                os_log(oaknut_log, "%{public}s", "[>>oaknut CodeBlock] TXM: Skipping brk #0xf00d (AZAHAR_SKIP_BRK is set)");
             } else {
-                os_log(oaknut_log, "%{public}s addr=0x%llx, size=%zu", "[>>oaknut CodeBlock] TXM: Executing brk #0x69,", (unsigned long long)rx_addr, actual_size);
+                os_log(oaknut_log, "%{public}s addr=0x%llx, size=%zu", "[>>oaknut CodeBlock] TXM: Executing brk #0xf00d,", (unsigned long long)rx_addr, actual_size);
                 __asm__ volatile (
                     "mov x0, %0\n"
                     "mov x1, %1\n"
-                    "brk #0x69"
+                    "mov x16, #1\n"
+                    "brk #0xf00d"
                     :
                     : "r" (rx_addr), "r" (actual_size)
-                    : "x0", "x1"
+                    : "x0", "x1", "x16"
                 );
-                os_log(oaknut_log, "%{public}s", "[>>oaknut CodeBlock] TXM: brk #0x69 completed");
+                os_log(oaknut_log, "%{public}s", "[>>oaknut CodeBlock] TXM: brk #0xf00d completed");
             }
             
             // Step 4: Use vm_remap to create rw mirror
